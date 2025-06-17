@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Module 1: Basic MCP Server - Starter Code
-TODO: Implement tools for analyzing git changes and suggesting PR templates
+Implement tools for analyzing git changes and suggesting PR templates
 """
 
 import json
@@ -17,7 +17,6 @@ mcp = FastMCP("pr-agent")
 TEMPLATES_DIR = Path(__file__).parent.parent.parent / "templates"
 
 
-# TODO: Implement tool functions here
 # Example structure for a tool:
 # @mcp.tool()
 # async def analyze_file_changes(base_branch: str = "main", include_diff: bool = True) -> str:
@@ -30,8 +29,6 @@ TEMPLATES_DIR = Path(__file__).parent.parent.parent / "templates"
 #     # Your implementation here
 #     pass
 
-# Minimal stub implementations so the server runs
-# TODO: Replace these with your actual implementations
 
 @mcp.tool()
 async def analyze_file_changes(base_branch: str = "main", include_diff: bool = True, max_diff_lines: int = 500) -> str:

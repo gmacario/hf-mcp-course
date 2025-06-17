@@ -115,8 +115,56 @@ async def analyze_file_changes(base_branch: str = "main", include_diff: bool = T
 @mcp.tool()
 async def get_pr_templates() -> str:
     """List available PR templates with their content."""
-    # TODO: Implement this tool
-    return json.dumps({"error": "Not implemented yet", "hint": "Read templates from TEMPLATES_DIR"})
+    try:
+        if not TEMPLATES_DIR.exists():
+            return json.dumps({
+                "error": "Templates directory not found",
+                "templates_dir": str(TEMPLATES_DIR)
+            })
+        
+        templates = []
+        
+        # Read all .md files in the templates directory
+        for template_file in TEMPLATES_DIR.glob("*.md"):
+            try:
+                with open(template_file, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                templates.append({
+                    "filename": template_file.name,
+                    "name": template_file.stem,
+                    "type": template_file.stem,
+                    "content": content,
+                    "path": str(template_file)
+                })
+            except Exception as e:
+                templates.append({
+                    "filename": template_file.name,
+                    "name": template_file.stem,
+                    "type": template_file.stem,
+                    "error": f"Failed to read template: {str(e)}",
+                    "path": str(template_file)
+                })
+        
+        if not templates:
+            return json.dumps({
+                "message": "No templates found",
+                "templates_dir": str(TEMPLATES_DIR),
+                "templates": []
+            })
+        
+        return json.dumps({
+            "templates_dir": str(TEMPLATES_DIR),
+            "total_templates": len(templates),
+            "templates": templates
+        }, indent=2)
+        
+    except Exception as e:
+        return json.dumps({
+            "error": "Failed to read PR templates",
+            "details": str(e),
+            "templates_dir": str(TEMPLATES_DIR)
+        })
 
 
 @mcp.tool()

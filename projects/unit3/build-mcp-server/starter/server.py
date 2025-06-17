@@ -175,8 +175,93 @@ async def suggest_template(changes_summary: str, change_type: str) -> str:
         changes_summary: Your analysis of what the changes do
         change_type: The type of change you've identified (bug, feature, docs, refactor, test, etc.)
     """
-    # TODO: Implement this tool
-    return json.dumps({"error": "Not implemented yet", "hint": "Map change_type to templates"})
+    try:
+        # Define mapping from change types to template files
+        template_mapping = {
+            "bug": "bug.md",
+            "fix": "bug.md",
+            "bugfix": "bug.md",
+            "feature": "feature.md",
+            "feat": "feature.md",
+            "enhancement": "feature.md",
+            "docs": "docs.md",
+            "documentation": "docs.md",
+            "refactor": "refactor.md",
+            "refactoring": "refactor.md",
+            "test": "test.md",
+            "tests": "test.md",
+            "testing": "test.md",
+            "performance": "performance.md",
+            "perf": "performance.md",
+            "optimization": "performance.md",
+            "security": "security.md",
+            "sec": "security.md"
+        }
+        
+        # Normalize change_type to lowercase for matching
+        change_type_lower = change_type.lower().strip()
+        
+        # Find the appropriate template
+        suggested_template = template_mapping.get(change_type_lower)
+        
+        if not suggested_template:
+            # If no direct match, try to find partial matches
+            for key, template in template_mapping.items():
+                if key in change_type_lower or change_type_lower in key:
+                    suggested_template = template
+                    break
+        
+        # Default to feature template if no match found
+        if not suggested_template:
+            suggested_template = "feature.md"
+        
+        # Check if the suggested template exists
+        template_path = TEMPLATES_DIR / suggested_template
+        
+        if not template_path.exists():
+            return json.dumps({
+                "error": "Suggested template not found",
+                "suggested_template": suggested_template,
+                "template_path": str(template_path),
+                "change_type": change_type,
+                "changes_summary": changes_summary
+            })
+        
+        # Read the template content
+        try:
+            with open(template_path, 'r', encoding='utf-8') as f:
+                template_content = f.read()
+        except Exception as e:
+            return json.dumps({
+                "error": "Failed to read suggested template",
+                "suggested_template": suggested_template,
+                "template_path": str(template_path),
+                "details": str(e),
+                "change_type": change_type,
+                "changes_summary": changes_summary
+            })
+        
+        # Return the suggestion with metadata
+        result = {
+            "suggested_template": suggested_template,
+            "template_name": template_path.stem,
+            "template_path": str(template_path),
+            "change_type": change_type,
+            "changes_summary": changes_summary,
+            "template_content": template_content,
+            "mapping_used": change_type_lower,
+            "available_types": list(template_mapping.keys())
+        }
+        
+        return json.dumps(result, indent=2)
+        
+    except Exception as e:
+        return json.dumps({
+            "error": "Failed to suggest template",
+            "details": str(e),
+            "change_type": change_type,
+            "changes_summary": changes_summary
+        })
 
 
 if __name__ == "__main__":
